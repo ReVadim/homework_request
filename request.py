@@ -24,9 +24,18 @@ def get_powerstats(data_dict):
     return intelligence_dict
 
 
+def best_intelligence(hero_intelligence_dict):
+    for keys, items in hero_intelligence_dict.items():
+        max_value = max(hero_intelligence_dict)
+        if keys == max_value:
+            return f'The highest intelligence has {keys} - {items}'
+        else:
+            continue
+
+
+max_intelligence = best_intelligence(get_powerstats(get_id(names_list)))
+print(max_intelligence)
 # names = get_id(names_list)
 # print(names)
 # intlgns = get_powerstats(names)
 # print(intlgns)
-# best_intelligence = get_powerstats(get_id(names_list))
-# print(best_intelligence)
