@@ -14,13 +14,14 @@ class YaUploader:
         """Метод загруджает файлы из папки на яндекс диск"""
         my_dir = file_path.split('\\')
         dir_name = my_dir[-1]
-        requests.put("https://cloud-api.yandex.net/v1/disk/resources",
-                     params={"path": f"{dir_name}"},
-                     headers=self.headers
-                     )
         contents = []
         for item in os.walk(dir_path):
             contents.append(item)
+        if contents:
+            requests.put("https://cloud-api.yandex.net/v1/disk/resources",
+                         params={"path": f"{dir_name}"},
+                         headers=self.headers
+                         )
             for path, dirs, files in contents:
                 for elem in files:
                     resp = requests.get(
@@ -29,10 +30,22 @@ class YaUploader:
                         headers=self.headers
                     )
                     href = resp.json()["href"]
-                    with open(f'{dir_path}\{elem}', "rb") as f:
+                    with open(f"{dir_path}\\{elem}", "rb") as f:
                         requests.put(href, files={"file": f})
                         print(f'the file {elem} is downloaded')
-        return "\nDownload is complete"
+                complete = '\nDownload is complete'
+
+        if not contents:
+            resp = requests.get(
+                "https://cloud-api.yandex.net/v1/disk/resources/upload",
+                params={"path": f"{dir_name}"},
+                headers=self.headers
+            )
+            href = resp.json()["href"]
+            with open(f'{dir_path}', "rb") as f:
+                requests.put(href, files={"file": f})
+                complete = f"\nDownload file {dir_name} is complete"
+        return print(complete)
 
 
 if __name__ == '__main__':
