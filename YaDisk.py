@@ -1,5 +1,7 @@
 import requests
 import os
+import sys
+import time
 
 token = input("input your API token: ")
 dir_path = input("input path to directory: ")
@@ -23,16 +25,32 @@ class YaUploader:
                          headers=self.headers
                          )
             for path, dirs, files in contents:
+                count = 1
+                part_way = len(files) / 10
+                percent = round(100 / len(files))
+                ost = 100 - (len(files) * percent)
                 for elem in files:
-                    resp = requests.get(
-                        "https://cloud-api.yandex.net/v1/disk/resources/upload",
-                        params={"path": f"{dir_name}/{elem}"},
-                        headers=self.headers
-                    )
-                    href = resp.json()["href"]
+                    try:
+                        resp = requests.get(
+                            "https://cloud-api.yandex.net/v1/disk/resources/upload",
+                            params={"path": f"{dir_name}/{elem}"},
+                            headers=self.headers
+                        )
+                        href = resp.json()["href"]
+                    except KeyError:
+                        resp = requests.get(
+                            "https://cloud-api.yandex.net/v1/disk/resources/upload",
+                            params={"path": f"{dir_name}/{elem+'copy'}"},
+                            headers=self.headers
+                        )
+                        href = resp.json()["href"]
                     with open(f"{dir_path}\\{elem}", "rb") as f:
                         requests.put(href, files={"file": f})
-                        print(f'the file {elem} is downloaded')
+                        part = int(count / part_way)
+                        status = round(count * percent + ost)
+                        print(f"[{count} / {len(files)}] {'##' * part + '--' * (10 - part)} {status} % || {elem}\r")
+                        time.sleep(.1)
+                        count += 1
                 complete = '\nDownload is complete'
 
         if not contents:
